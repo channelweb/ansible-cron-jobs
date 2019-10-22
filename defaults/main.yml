@@ -1,0 +1,17 @@
+---
+app_cron_file: my_cron_file
+app_cron_user: www-data
+app_base_path: /var/www
+
+apps:
+  my_app: 
+    server_name: my.app.com
+    src: https://github.com/my/app
+    version: master
+
+app_cron_jobs:
+  - name: my custom crond
+    job: "{{ app_base_path }}/my_app/my_script my_args > /dev/null 2>&1"
+    hour: 5
+    minute: 03
+    cron_file: my_app_cron

@@ -1,0 +1,66 @@
+---
+- name: ensure main cron file exists
+  become: yes
+  become_user: root
+  file:
+    path: "/etc/cron.d/{{ app_cron_file }}"
+    state: touch
+    owner: root
+    mode: 0755
+  tags: 
+   - bedita-cron
+
+- name: set up async jobs runner
+  become: yes
+  become_user: root
+  cron:
+    user: "{{ app_cron_user }}"
+    name: "BEdita Async jobs runner for {{ item.key }}"
+    job: "{{ app_base_path }}/{{ item.key }}/bin/cake jobs pending > /dev/null 2>&1"
+    cron_file: "{{ app_cron_file }}"
+  when: item.value.jobs is defined
+  with_dict: "{{ apps }}"
+  tags: 
+   - bedita-cron
+
+- name: set up remove orphan streams cron
+  become: yes
+  become_user: root
+  cron:
+    user: "{{ app_cron_user }}"
+    name: "BEdita remove orphan streams {{ item.key }}"
+    job: "{{ app_base_path }}/{{ item.key }}/bin/cake streams removeOrphans > /dev/null 2>&1"
+    hour: 5
+    minute: 00
+    cron_file: "{{ app_cron_file }}"
+  when: item.value.jobs is defined
+  with_dict: "{{ apps }}"
+  tags: 
+   - bedita-cron
+
+- name: ensure custom cron files exist
+  become: yes
+  become_user: root
+  file:
+    path: "/etc/cron.d/{{ item.cron_file }}"
+    state: touch
+    owner: root
+    mode: 0755
+  loop: "{{ app_cron_jobs }}"
+  tags: 
+   - bedita-cron
+
+- name: set custom app cron jobs
+  become: yes
+  become_user: root
+  cron:
+    user: "{{ app_cron_user }}"
+    name: "{{ item.name }}"
+    job: "{{ item.job }}"
+    hour: "{{ item.hour }}"
+    minute: "{{ item.minute }}"
+    cron_file: "{{ item.cron_file }}"
+  loop: "{{ app_cron_jobs }}"
+  tags:
+    - bedita
+    - bedita-cron

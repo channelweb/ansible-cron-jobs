@@ -54,7 +54,7 @@
   become: yes
   become_user: root
   cron:
-    user: "{{ app_cron_user }}"
+    user: "{{ item.user|default(app_cron_user) }}"
     name: "{{ item.name }}"
     job: "{{ item.job }}"
     hour: "{{ item.hour }}"

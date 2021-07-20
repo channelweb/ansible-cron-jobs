@@ -59,6 +59,9 @@
     job: "{{ item.job }}"
     hour: "{{ item.hour }}"
     minute: "{{ item.minute }}"
+    weekday: "{{ item.weekday | default('*') }}"
+    day: "{{ item.day | default('*') }}"
+    month: "{{ item.month  | default('*') }}"
     cron_file: "{{ item.cron_file }}"
   loop: "{{ app_cron_jobs }}"
   tags:
